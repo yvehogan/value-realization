@@ -1,26 +1,110 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Nexus design tokens — extracted from the Figma file (Nexus / Page 1).
+ * Everything the UI uses should come from here rather than arbitrary values.
+ */
+@theme {
+  /* Typography */
+  --font-sans: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --text-display: 1.75rem; /* 28 — page H1 */
+  --text-display--line-height: 2.625rem;
+  --text-display--letter-spacing: -0.01em;
+  --text-stat: 2rem; /* 32 — KPI numbers */
+  --text-stat--line-height: 3rem;
+  --text-stat--letter-spacing: -0.01em;
+  --text-title: 1.5rem; /* 24 — card titles */
+  --text-title--line-height: 2rem;
+  --text-title--letter-spacing: -0.01em;
+  --text-heading: 1.125rem; /* 18 — section H2 */
+  --text-heading--line-height: 1.75rem;
+  --text-heading--letter-spacing: -0.01em;
+  --text-lead: 0.9375rem; /* 15 — page subtitle */
+  --text-lead--line-height: 1.40625rem;
+  --text-body: 0.875rem; /* 14 */
+  --text-body--line-height: 1.25rem;
+  --text-caption: 0.8125rem; /* 13 */
+  --text-caption--line-height: 1.117rem;
+  --text-meta: 0.75rem; /* 12 */
+  --text-meta--line-height: 1rem;
+  --text-micro: 0.6875rem; /* 11 */
+  --text-micro--line-height: 1.03125rem;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Surfaces & neutrals */
+  --color-page: #fff0fd;
+  --color-surface: #ffffff;
+  --color-line: #e9e5ef;
+  --color-track: #f1eef6;
+  --color-ink: #1a1030;
+  --color-ink-soft: #3d3352;
+  --color-muted: #6f6684;
+  --color-subtle: #9892a5;
+
+  /* Brand */
+  --color-brand: #ab0b4b;
+  --color-brand-deep: #870939;
+  --color-plum: #42053b;
+  --color-plum-bright: #5a0a51;
+  --color-plum-line: #631659;
+  --color-plum-muted: #b394ae;
+  --color-night: #17191f;
+  --color-onyx: #0c1420;
+  --color-sidebar: #2a0325;
+  --color-lavender: #baacc5; /* login subtitle on plum */
+
+  /* Initiative types */
+  --color-product: #73228f;
+  --color-program: #2563a8;
+  --color-venture: #b23c86;
+  --color-rnd: #0891a5;
+
+  /* Status */
+  --color-success: #0f7a5a;
+  --color-warning: #c98a10;
+  --color-danger: #d0455a;
+  --color-cream: #fff6e1;
+
+  /* Stat card icon tiles */
+  --color-tile-sky: #ecf9ff;
+  --color-tile-lilac: #fcf3ff;
+  --color-tile-mint: #ebfaed;
+  --color-tile-blush: #fff2f2;
+
+  /* Overlays */
+  --color-scrim: rgb(40 48 58 / 0.4);
+  --color-scrollbar: #dbdbdb;
+
+  /* Radii (Tailwind defaults cover 8/12/16) */
+  --radius-button: 0.625rem; /* 10 — top-bar buttons, icon tiles, menu items */
+  --radius-popover: 0.9375rem; /* 15 — dropdown panels */
+  --radius-card: 1.25rem; /* 20 */
+
+  /* Elevation */
+  --shadow-card:
+    0 1px 1px rgb(24 10 31 / 0.04), 0 8px 12px rgb(24 10 31 / 0.12);
+
+  /* Layout */
+  --spacing-sidebar: 16.25rem; /* 260 */
+  --spacing-sidebar-collapsed: 4.75rem; /* 76 */
+  --spacing-topbar: 3.9375rem; /* 63 */
+  --container-content: 87.5rem; /* 1400 */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+/* Slim 6px scrollbar used in dropdown panels (Figma: #dbdbdb, fully rounded). */
+@utility scrollbar-soft {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar) transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-scrollbar);
+    border-radius: 42px;
+  }
 }
