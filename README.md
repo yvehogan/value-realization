@@ -2,7 +2,7 @@
 
 Nexus is the Innovation Value Realization Portal. It tracks an innovation portfolio from the IDEAx Labs designs: initiatives (products, programs, ventures and R&D), their milestones, progress updates, and the value they deliver against strategic objectives.
 
-> **Status:** front-end prototype. All data is static and lives in `src/lib/data.ts`. Sign-in uses dummy accounts, and forms such as New Project and Add Update don't save anything yet.
+> **Status:** front-end prototype. All data is static and lives in `src/lib/data.ts`. Forms such as New Project and Add Update don't save anything yet.
 
 ## Stack
 
@@ -27,14 +27,7 @@ Open [http://localhost:3000](http://localhost:3000). You'll be sent to `/login`.
 | `npm run start` | Serve the production build  |
 | `npm run lint`  | Run ESLint                  |
 
-### Test accounts
-
-| Role  | Email              | Password    | Signs in as                         |
-| ----- | ------------------ | ----------- | ----------------------------------- |
-| Admin | `admin@nexus.test` | `Admin@123` | Solomon Adebayo, Head of Innovation |
-| User  | `user@nexus.test`  | `User@123`  | Victor Onwuelu                      |
-
-The account list is in [src/lib/auth.ts](src/lib/auth.ts).
+The app has an admin side and a user side; see [Roles](#roles).
 
 ### Environment variables
 
@@ -111,15 +104,3 @@ public/
   decor/              Decorative artwork for the sidebar and dashboard cards
   login/              Login background
 ```
-
-## Conventions
-
-- **Use design tokens instead of hard-coded values.** Colours, font sizes, radii, shadows and layout widths are defined in `@theme`, so write `bg-brand`, `text-body` and `rounded-card` rather than hex codes or pixel values. Add a new token when the design introduces one.
-- **Don't pass conflicting classes to `cn()`.** It only joins class names and doesn't use tailwind-merge, so two classes that set the same property won't override each other reliably. Add a prop or variant to the component instead, as `Button` does with `variant`, `size` and `radius`.
-- **Placeholder data is labelled.** Initiatives with no milestones or value data defined in `data.ts` get realistic values from [src/lib/placeholders.ts](src/lib/placeholders.ts). The values are generated from each initiative's slug, so they stay the same between reloads. Delete that module once real data is connected.
-
-## Known gaps
-
-- There is no backend. Creating an initiative or publishing an update closes the form without saving anything. The **Add Member** button doesn't open anything yet.
-- The purple wave artwork on the second dashboard stat card is missing; see the `TODO` in `src/lib/data.ts` (Figma node `68:61298`).
-- Sign-in uses fixed dummy accounts (see [How sign-in works](#how-sign-in-works)).
