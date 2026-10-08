@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { cn } from "@/lib/cn";
 import { Icon } from "./icon";
+
+const WIDTHS = {
+  /** New Initiative */
+  md: "w-[512px]",
+  /** Update Project */
+  sm: "w-[460px]",
+} as const;
 
 type ModalProps = {
   open: boolean;
@@ -13,10 +21,11 @@ type ModalProps = {
   children: ReactNode;
   /** Buttons rendered in the bordered footer */
   footer?: ReactNode;
+  size?: keyof typeof WIDTHS;
 };
 
-/** Centered 512px dialog built on native <dialog> (focus trap + Esc for free). */
-export function Modal({ open, onClose, title, description, icon, children, footer }: ModalProps) {
+/** Centered dialog built on native <dialog> (focus trap + Esc for free). */
+export function Modal({ open, onClose, title, description, icon, children, footer, size = "md" }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -32,7 +41,10 @@ export function Modal({ open, onClose, title, description, icon, children, foote
       onClose={onClose}
       onClick={(e) => e.target === e.currentTarget && onClose()}
       aria-labelledby="modal-title"
-      className="m-auto max-h-[calc(100vh-4rem)] w-[512px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-line bg-surface p-0 text-ink backdrop:bg-scrim backdrop:backdrop-blur-[6px] open:flex open:flex-col"
+      className={cn(
+        "m-auto max-h-[calc(100vh-4rem)] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-line bg-surface p-0 text-ink backdrop:bg-scrim backdrop:backdrop-blur-[6px] open:flex open:flex-col",
+        WIDTHS[size],
+      )}
     >
       <header className="flex items-start justify-between border-b border-line px-6 py-4">
         <div>

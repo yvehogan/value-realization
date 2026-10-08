@@ -30,6 +30,8 @@
   --text-meta--line-height: 1rem;
   --text-micro: 0.6875rem; /* 11 */
   --text-micro--line-height: 1.03125rem;
+  --text-tag: 0.625rem; /* 10 — "Optional" field tag */
+  --text-tag--line-height: 0.875rem;
 
   /* Surfaces & neutrals */
   --color-page: #fff0fd;
@@ -74,6 +76,7 @@
   /* Overlays */
   --color-scrim: rgb(40 48 58 / 0.4);
   --color-scrollbar: #dbdbdb;
+  --color-rail: #d9d9d9; /* slider track */
 
   /* Radii (Tailwind defaults cover 8/12/16) */
   --radius-button: 0.625rem; /* 10 — top-bar buttons, icon tiles, menu items */

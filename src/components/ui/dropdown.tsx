@@ -77,6 +77,8 @@ type MenuSelectProps<T extends string> = {
   name?: string;
   /** Open above the trigger (use near the bottom of a scroll area) */
   placement?: "bottom" | "top";
+  /** `field`: the menu matches the trigger's width (Update Project modal) */
+  variant?: "compact" | "field";
   className?: string;
 };
 
@@ -88,6 +90,7 @@ export function MenuSelect<T extends string>({
   labelledBy,
   name,
   placement = "bottom",
+  variant = "compact",
   className,
 }: MenuSelectProps<T>) {
   const { open, setOpen, ref, onKeyDown } = useDisclosure();
@@ -97,7 +100,13 @@ export function MenuSelect<T extends string>({
   return (
     <div ref={ref} className={cn("relative", className)} onKeyDown={onKeyDown}>
       {name && <input type="hidden" name={name} value={value} />}
-      <Trigger open={open} onClick={() => setOpen(!open)} listId={listId} labelledBy={labelledBy} className="w-full px-3">
+      <Trigger
+        open={open}
+        onClick={() => setOpen(!open)}
+        listId={listId}
+        labelledBy={labelledBy}
+        className="w-full px-3"
+      >
         {current?.label}
       </Trigger>
       {open && (
@@ -106,7 +115,8 @@ export function MenuSelect<T extends string>({
           role="listbox"
           aria-labelledby={labelledBy}
           className={cn(
-            "absolute left-0 z-20 flex w-[200px] flex-col gap-2.5 rounded-popover border border-line bg-surface p-2.5 shadow-card",
+            "absolute left-0 z-20 flex flex-col gap-2.5 rounded-popover border border-line bg-surface p-2.5 shadow-card",
+            variant === "field" ? "w-full" : "w-[200px]",
             placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
           )}
         >
