@@ -5,15 +5,15 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 
 const TABS = [
-  { segment: "", label: "Overview" },
+  { segment: "/updates", label: "Updates" },
+  // { segment: "", label: "Overview" },
   { segment: "/milestones", label: "Milestones" },
   { segment: "/value", label: "Value" },
-  { segment: "/updates", label: "Updates" },
 ];
 
-export function DetailTabs({ slug }: { slug: string }) {
+export function DetailTabs({ id }: { id: string }) {
   const pathname = usePathname();
-  const base = `/initiatives/${slug}`;
+  const base = `/initiatives/${id}`;
 
   return (
     <nav aria-label="Initiative sections" className="flex gap-1 border-b border-line">

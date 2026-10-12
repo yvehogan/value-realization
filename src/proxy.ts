@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE } from "@/lib/session-cookie";
+import { REFRESH_COOKIE } from "@/lib/session-cookie";
 
-// Optimistic check only (cookie present?). The app layout verifies the
-// session signature on the server before rendering anything.
+// Optimistic check only (cookie present?). The API validates the tokens on every
+// call; /api/nexus answers 401 itself so the client can send the user to /login.
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const hasSession = request.cookies.has(SESSION_COOKIE);
+  const hasSession = request.cookies.has(REFRESH_COOKIE);
 
   if (pathname === "/login") {
     return hasSession ? NextResponse.redirect(new URL("/", request.url)) : NextResponse.next();
@@ -19,6 +19,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals and static files in /public.
-  matcher: ["/((?!_next/|icons/|decor/|brand/|login/|favicon.ico|icon.svg|apple-icon.png).*)"],
+  // Everything except Next internals, API routes and static files in /public.
+  matcher: ["/((?!_next/|api/|icons/|decor/|brand/|login/|favicon.ico|icon.svg|apple-icon.png).*)"],
 };

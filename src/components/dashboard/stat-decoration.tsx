@@ -1,11 +1,12 @@
 import type { CSSProperties } from "react";
-import type { StatDecoration as Kind } from "@/lib/data";
+
+export type StatDecorationKind = "waves-sky" | "waves-mint" | "waves-amber";
 
 /**
  * Bottom-right wave artwork on the dashboard stat cards. Place inside a
  * `relative overflow-hidden` card; it sits behind the card content.
  */
-export function StatDecoration({ kind }: { kind: Kind }) {
+export function StatDecoration({ kind }: { kind: StatDecorationKind }) {
   switch (kind) {
     case "waves-sky":
       // Figma export cropped to the card's inner box (265.5 × 154).

@@ -115,7 +115,7 @@ export function MenuSelect<T extends string>({
           role="listbox"
           aria-labelledby={labelledBy}
           className={cn(
-            "absolute left-0 z-20 flex flex-col gap-2.5 rounded-popover border border-line bg-surface p-2.5 shadow-card",
+            "absolute left-0 z-20 flex animate-pop-in flex-col gap-2.5 rounded-popover border border-line bg-surface p-2.5 shadow-card",
             variant === "field" ? "w-full" : "w-[200px]",
             placement === "top" ? "bottom-full mb-1" : "top-full mt-1",
           )}
@@ -192,7 +192,7 @@ export function PeopleSelect({ people, value, onChange, labelledBy, describedBy 
           aria-multiselectable
           aria-labelledby={labelledBy}
           ref={listRef}
-          className="scrollbar-soft mt-2.5 flex max-h-[348px] w-full flex-col gap-2.5 overflow-y-auto rounded-popover border border-line bg-surface p-[15px]"
+          className="scrollbar-soft mt-2.5 flex max-h-[348px] animate-pop-in w-full flex-col gap-2.5 overflow-y-auto rounded-popover border border-line bg-surface p-[15px]"
         >
           {people.map((person, i) => {
             const checked = value.includes(person.id);

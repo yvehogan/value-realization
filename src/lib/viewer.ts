@@ -3,11 +3,12 @@
 export type Role = "admin" | "user";
 
 export type Viewer = {
+  /** API user id */
   id: string;
   name: string;
   firstName: string;
   initials: string;
-  /** Job title, e.g. “Head of Innovation” */
+  /** Team role, e.g. “Backend Engineer” */
   title: string;
   role: Role;
   /** Tailwind bg-* class for the avatar */
@@ -21,7 +22,7 @@ export const ROLE_LABEL: Record<Role, { short: string; access: string }> = {
 
 export const isAdmin = (viewer: Viewer) => viewer.role === "admin";
 
-/** Admins can update anything; members only initiatives they're responsible for. */
-export function canUpdateInitiative(viewer: Viewer, initiative: { ownerIds: string[] }) {
-  return isAdmin(viewer) || initiative.ownerIds.includes(viewer.id);
+/** Admins can update anything; members only projects they're assigned to. */
+export function canUpdateProject(viewer: Viewer, project: { owners: { id: string }[] }) {
+  return isAdmin(viewer) || project.owners.some((owner) => owner.id === viewer.id);
 }

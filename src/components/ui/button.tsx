@@ -4,6 +4,8 @@ import { cn } from "@/lib/cn";
 const VARIANTS = {
   /** Magenta call-to-action, e.g. “New Projects” */
   primary: "gap-1.5 bg-brand font-bold text-white hover:bg-brand-deep disabled:opacity-40 disabled:hover:bg-brand",
+  /** Red call-to-action for destructive confirmations */
+  danger: "gap-1.5 bg-danger font-bold text-white hover:bg-danger/90 disabled:opacity-40",
   /** White bordered button, e.g. “This Year”, “Cancel” */
   secondary: "gap-1.5 border border-line bg-surface font-medium text-ink-soft hover:bg-page",
   /** Transparent bordered button with ink label, e.g. modal “Back” */
@@ -42,7 +44,7 @@ export function buttonClasses(
   radius = "rounded-lg",
 ) {
   return cn(
-    "inline-flex shrink-0 items-center whitespace-nowrap transition-colors",
+    "inline-flex shrink-0 items-center whitespace-nowrap transition-[color,background-color,border-color,opacity,transform] duration-150 active:scale-[0.97]",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
     VARIANTS[variant],
     variant !== "icon" && variant !== "link" && cn(SIZES[size], radius),

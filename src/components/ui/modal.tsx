@@ -42,7 +42,7 @@ export function Modal({ open, onClose, title, description, icon, children, foote
       onClick={(e) => e.target === e.currentTarget && onClose()}
       aria-labelledby="modal-title"
       className={cn(
-        "m-auto max-h-[calc(100vh-4rem)] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-line bg-surface p-0 text-ink backdrop:bg-scrim backdrop:backdrop-blur-[6px] open:flex open:flex-col",
+        "m-auto max-h-[calc(100vh-4rem)] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-line bg-surface p-0 text-ink backdrop:bg-scrim backdrop:backdrop-blur-[6px] open:flex open:flex-col open:animate-pop-in backdrop:animate-fade-in",
         WIDTHS[size],
       )}
     >

@@ -4,14 +4,10 @@ import { InlineProgress } from "@/components/ui/inline-progress";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Table, Td, Th, Tr } from "@/components/ui/table";
 import { TypeBadge } from "@/components/ui/type-badge";
-import { getPerson, type Initiative, type Person } from "@/lib/data";
+import type { ProjectSummary } from "@/lib/api/adapters";
 import { TYPE_STYLES } from "@/lib/initiative-types";
 
-export function ownersOf(initiative: Initiative): Person[] {
-  return initiative.ownerIds.map(getPerson).filter((p): p is Person => !!p);
-}
-
-export function InitiativeTable({ initiatives }: { initiatives: Initiative[] }) {
+export function InitiativeTable({ initiatives }: { initiatives: ProjectSummary[] }) {
   return (
     <Table>
       <thead>
@@ -26,9 +22,9 @@ export function InitiativeTable({ initiatives }: { initiatives: Initiative[] }) 
       </thead>
       <tbody>
         {initiatives.map((initiative) => (
-          <Tr key={initiative.slug}>
+          <Tr key={initiative.id}>
             <Td className="font-semibold text-ink">
-              <Link href={`/initiatives/${initiative.slug}`} className="after:absolute after:inset-0 hover:underline">
+              <Link href={`/initiatives/${initiative.id}`} className="after:absolute after:inset-0 hover:underline">
                 {initiative.name}
               </Link>
             </Td>
@@ -36,7 +32,7 @@ export function InitiativeTable({ initiatives }: { initiatives: Initiative[] }) 
               <TypeBadge type={initiative.type} />
             </Td>
             <Td>
-              <AvatarStack people={ownersOf(initiative)} />
+              <AvatarStack people={initiative.owners} />
             </Td>
             <Td>
               <StatusPill status={initiative.status} />

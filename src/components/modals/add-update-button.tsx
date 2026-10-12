@@ -1,24 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useViewer } from "@/components/auth/viewer-context";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { INITIATIVES } from "@/lib/data";
-import { canUpdateInitiative } from "@/lib/viewer";
+import { toProjectSummary, type ProjectSummary } from "@/lib/api/adapters";
+import { useProjects } from "@/lib/api/queries";
+import { canUpdateProject, isAdmin } from "@/lib/viewer";
 import { AddUpdateModal } from "./add-update-modal";
 
 /**
- * “Add Update” button that owns its modal. Pass an initiative to preselect it.
- * Hidden when the viewer can't update it (members: only their own initiatives).
+ * “Add Update” button that owns its modal. Pass a project to update that one; without it the
+ * viewer picks from the projects they can update. Hidden when there's nothing they can update.
  */
-export function AddUpdateButton({ initiativeSlug, className }: { initiativeSlug?: string; className?: string }) {
+export function AddUpdateButton({ project, className }: { project?: ProjectSummary; className?: string }) {
   const [open, setOpen] = useState(false);
   const viewer = useViewer();
-  const initiative = INITIATIVES.find((i) => i.slug === initiativeSlug);
-  const updatable = INITIATIVES.filter((i) => canUpdateInitiative(viewer, i));
 
-  if (initiative ? !canUpdateInitiative(viewer, initiative) : updatable.length === 0) return null;
+  // Global mode only: admins can update any project, members only their own.
+  const list = useProjects(isAdmin(viewer) ? {} : { AssignedUserId: viewer.id }, { enabled: !project });
+  const updatable = useMemo(() => (list.data?.data ?? []).map(toProjectSummary), [list.data]);
+
+  if (project ? !canUpdateProject(viewer, project) : updatable.length === 0) return null;
 
   return (
     <>
@@ -30,8 +33,8 @@ export function AddUpdateButton({ initiativeSlug, className }: { initiativeSlug?
         key={open ? "open" : "closed"}
         open={open}
         onClose={() => setOpen(false)}
-        initiative={initiative}
-        initiatives={updatable}
+        project={project}
+        projects={updatable}
       />
     </>
   );

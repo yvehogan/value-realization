@@ -3,14 +3,20 @@ import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { TypeBadge } from "@/components/ui/type-badge";
-import { TYPE_STYLES, WORKSTREAM_META } from "@/lib/initiative-types";
-import type { WorkstreamSummary } from "@/lib/data";
+import { TYPE_STYLES, WORKSTREAM_META, type Workstream } from "@/lib/initiative-types";
+import { staggerStyle } from "@/lib/motion";
 
-export function WorkstreamCard({ workstream }: { workstream: WorkstreamSummary }) {
+export type WorkstreamSummary = {
+  type: Workstream;
+  initiatives: number;
+  progress: number;
+};
+
+export function WorkstreamCard({ workstream, index = 0 }: { workstream: WorkstreamSummary; index?: number }) {
   const meta = WORKSTREAM_META[workstream.type];
   return (
-    <Link href={`/initiatives?type=${workstream.type}`} className="group block">
-      <Card className="flex h-[180px] flex-col rounded-card p-5 transition-colors group-hover:border-plum-muted">
+    <Link href={`/initiatives?type=${workstream.type}`} className="group block stagger animate-fade-up" style={staggerStyle(index)}>
+      <Card className="flex h-[180px] flex-col rounded-card p-5 transition-[border-color,transform,box-shadow] duration-200 group-hover:-translate-y-0.5 group-hover:border-plum-muted group-hover:shadow-card">
         <div className="flex items-center justify-between">
           <span className="flex size-9 items-center justify-center rounded-lg">
             <Icon src={meta.icon} size={18} />

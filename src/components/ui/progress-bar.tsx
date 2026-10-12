@@ -28,7 +28,11 @@ export function ProgressBar({ value, color = "bg-brand", size = "md", className,
       aria-label={label}
       className={cn("w-full overflow-hidden rounded-full bg-track", SIZES[size], className)}
     >
-      <div className={cn("h-full rounded-full", color)} style={{ width: `${clamped}%` }} />
+      {/* Fills from the left on first paint, then glides when the value changes. */}
+      <div
+        className={cn("h-full origin-left animate-grow-x rounded-full transition-[width] duration-500 ease-out-soft", color)}
+        style={{ width: `${clamped}%` }}
+      />
     </div>
   );
 }

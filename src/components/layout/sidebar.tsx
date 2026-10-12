@@ -8,11 +8,14 @@ import { Avatar } from "@/components/ui/avatar";
 import { Icon, MaskIcon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import { ROLE_LABEL } from "@/lib/viewer";
-import { PRIMARY_NAV, SETTINGS_NAV, SETTINGS_RAIL_ICON, isActive, type NavItem } from "./nav-items";
+import { PRIMARY_NAV, /* SETTINGS_NAV, SETTINGS_RAIL_ICON, */ isActive, type NavItem } from "./nav-items";
 
 type SidebarProps = {
   collapsed: boolean;
   onToggle: () => void;
+  /** Below lg the sidebar is an off-canvas drawer */
+  mobileOpen: boolean;
+  onMobileClose: () => void;
 };
 
 // Figma: two 336px circles (#981D87 @ 50%, heavily blurred). The exported SVG
@@ -24,14 +27,16 @@ const GLOWS = [
   { left: 108, top: 586 },
 ];
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const viewer = useViewer();
 
   return (
     <aside
       className={cn(
-        "sticky top-0 isolate flex h-screen shrink-0 flex-col overflow-hidden bg-sidebar text-white transition-[width] duration-200",
+        "fixed inset-y-0 left-0 z-40 isolate flex h-dvh shrink-0 flex-col overflow-hidden bg-sidebar text-white transition-[width,translate] duration-200",
+        "lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0",
+        mobileOpen ? "translate-x-0" : "-translate-x-full",
         collapsed ? "w-sidebar-collapsed" : "w-sidebar",
       )}
     >
@@ -82,9 +87,17 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             onClick={onToggle}
             aria-label="Collapse sidebar"
             aria-expanded
-            className="flex size-7 items-center justify-center rounded-lg hover:bg-white/10"
+            className="hidden size-7 items-center justify-center rounded-lg hover:bg-white/10 lg:flex"
           >
             <Icon src="/icons/collapse.svg" size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={onMobileClose}
+            aria-label="Close menu"
+            className="flex size-9 items-center justify-center rounded-lg hover:bg-white/10 lg:hidden"
+          >
+            <MaskIcon src="/icons/close.svg" size={18} className="text-white" />
           </button>
         </div>
       )}
@@ -98,6 +111,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             </li>
           ))}
         </ul>
+        {/* Settings is hidden for now. To restore it, uncomment this block and SETTINGS_NAV / SETTINGS_RAIL_ICON in the imports.
         <div className="pt-4">
           <div className="border-t border-plum-line" />
         </div>
@@ -116,6 +130,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             <NavLink item={SETTINGS_NAV} active={isActive(pathname, SETTINGS_NAV.href)} collapsed={false} />
           </div>
         )}
+        */}
       </nav>
 
       {/* Signed-in user */}

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { checkCredentials, createSession, deleteSession } from "@/lib/auth";
+import { clearSession, signIn } from "@/lib/api/server";
 
 export type LoginState = { error?: string; email?: string } | undefined;
 
@@ -11,19 +11,18 @@ function safeNext(value: FormDataEntryValue | null) {
 }
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
-  const email = String(formData.get("email") ?? "");
+  const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) return { error: "Enter your email and password.", email };
 
-  const account = checkCredentials(email, password);
-  if (!account) return { error: "That email and password don't match an account.", email };
+  const result = await signIn(email, password);
+  if ("error" in result) return { error: result.error, email };
 
-  await createSession(account.email);
   redirect(safeNext(formData.get("next")));
 }
 
 export async function logout() {
-  await deleteSession();
+  await clearSession();
   redirect("/login");
 }

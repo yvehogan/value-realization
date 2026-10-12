@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { NewProjectButton } from "@/components/initiatives/new-project-button";
 import { PortfolioView } from "@/components/initiatives/portfolio-view";
 import { PageHeader } from "@/components/ui/headers";
 import { isWorkstream } from "@/lib/initiative-types";
@@ -14,6 +15,7 @@ export default async function InitiativesPage({ searchParams }: PageProps<"/init
       <PageHeader
         title="Portfolio"
         description="Everything Innovation is building, running, researching and investing in."
+        action={<NewProjectButton />}
       />
       {/* key resets filters when arriving from a dashboard workstream card */}
       <PortfolioView key={initialType} initialType={initialType} />

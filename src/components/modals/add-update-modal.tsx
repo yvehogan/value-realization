@@ -1,23 +1,27 @@
 "use client";
 
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useId, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { MenuSelect, type MenuOption } from "@/components/ui/dropdown";
 import { MaskIcon } from "@/components/ui/icon";
+import { Spinner } from "@/components/ui/loader";
 import { Modal } from "@/components/ui/modal";
+import { API_STATUS, PROJECT_STATUSES, type ProjectSummary } from "@/lib/api/adapters";
+import { errorMessage } from "@/lib/api/client";
+import { useCreateProjectUpdate, useObjectives, useProject } from "@/lib/api/queries";
+import type { ProjectStatus, UpdateType } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
-import { OBJECTIVES, type Initiative } from "@/lib/data";
-import { INITIATIVE_STATUSES, STATUS_STYLES, type Status } from "@/lib/status";
-
-type UpdateType = "progress" | "milestone" | "value";
+import { STATUS_STYLES } from "@/lib/status";
 
 const UPDATE_TYPES: { value: UpdateType; label: string }[] = [
-  { value: "progress", label: "Progress Update" },
-  { value: "milestone", label: "Milestone" },
-  { value: "value", label: "Value Metric" },
+  { value: "ProgressUpdate", label: "Progress Update" },
+  { value: "Milestone", label: "Milestone" },
+  { value: "ValueMetric", label: "Value Metric" },
 ];
 
-const STATUS_OPTIONS: MenuOption<Status>[] = INITIATIVE_STATUSES.map((s) => ({ value: s, label: STATUS_STYLES[s].label }));
+const STATUS_OPTIONS: MenuOption<ProjectStatus>[] = PROJECT_STATUSES.map((s) => ({ value: s, label: STATUS_STYLES[API_STATUS[s]].label }));
+
+const STATUS_FROM_UI = Object.fromEntries(Object.entries(API_STATUS).map(([api, ui]) => [ui, api])) as Record<string, ProjectStatus>;
 
 // Figma: 40px fields, 12px radius, placeholder at 30% ink.
 const fieldClass =
@@ -26,39 +30,69 @@ const fieldClass =
 type Props = {
   open: boolean;
   onClose: () => void;
-  /** When omitted (global “Add Update”), the user picks the initiative. */
-  initiative?: Initiative;
-  initiatives?: Initiative[];
+  /** When omitted (global “Add Update”), the user picks one of `projects`. */
+  project?: ProjectSummary;
+  projects?: ProjectSummary[];
 };
 
 /** “Update Project” dialog. The fields shown depend on the selected update type. */
-export function AddUpdateModal({ open, onClose, initiative, initiatives = [] }: Props) {
-  const [updateType, setUpdateType] = useState<UpdateType>("progress");
-  const [selectedSlug, setSelectedSlug] = useState(initiative?.slug ?? initiatives[0]?.slug ?? "");
-  const current = initiative ?? initiatives.find((i) => i.slug === selectedSlug);
+export function AddUpdateModal({ open, onClose, project, projects = [] }: Props) {
+  const [updateType, setUpdateType] = useState<UpdateType>("ProgressUpdate");
+  const [selectedId, setSelectedId] = useState(project?.id ?? projects[0]?.id ?? "");
+  const current = project ?? projects.find((p) => p.id === selectedId);
 
-  const [status, setStatus] = useState<Status>(current?.status ?? "on-track");
-  const [progress, setProgress] = useState(current?.progress ?? 50);
+  const [status, setStatus] = useState<ProjectStatus>(STATUS_FROM_UI[current?.status ?? "on-track"] ?? "OnTrack");
+  const [progress, setProgress] = useState(current?.progress ?? 0);
+  const [evidence, setEvidence] = useState<File | undefined>();
 
-  const linked = current?.objectives ? OBJECTIVES.filter((o) => o.id in current.objectives!) : OBJECTIVES;
-  const [objectiveId, setObjectiveId] = useState(linked[0]?.id ?? OBJECTIVES[0].id);
-  const objectiveOptions: MenuOption<string>[] = (linked.length ? linked : OBJECTIVES).map((o) => ({ value: o.id, label: o.name }));
+  const objectives = useObjectives();
+  // Objectives this project already reports against come first in the picker.
+  const detail = useProject(current?.id ?? "");
+  const objectiveOptions = useMemo(() => {
+    const linked = new Set((detail.data ? [...detail.data.value, ...detail.data.updates] : []).map((u) => u.objectiveId));
+    return [...(objectives.data ?? [])]
+      .sort((a, b) => Number(linked.has(b.id)) - Number(linked.has(a.id)))
+      .map((o): MenuOption<string> => ({ value: o.id, label: o.name ?? "Untitled objective" }));
+  }, [objectives.data, detail.data]);
+  const [objectiveChoice, setObjectiveChoice] = useState<string>();
+  const objectiveId = objectiveChoice ?? objectiveOptions[0]?.value ?? "";
 
-  function selectInitiative(slug: string) {
-    const next = initiatives.find((i) => i.slug === slug);
-    setSelectedSlug(slug);
+  const create = useCreateProjectUpdate(current?.id ?? "");
+
+  function selectProject(id: string) {
+    const next = projects.find((p) => p.id === id);
+    setSelectedId(id);
     if (!next) return;
-    setStatus(next.status);
+    setStatus(STATUS_FROM_UI[next.status] ?? "OnTrack");
     setProgress(next.progress);
-    const nextLinked = next.objectives ? OBJECTIVES.filter((o) => o.id in next.objectives!) : OBJECTIVES;
-    setObjectiveId((nextLinked[0] ?? OBJECTIVES[0]).id);
+    setObjectiveChoice(undefined);
   }
 
-  function submit(e: FormEvent) {
+  function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // No backend yet — the update is not persisted.
-    onClose();
+    if (!current) return;
+    const form = new FormData(e.currentTarget);
+    const text = (name: string) => String(form.get(name) ?? "").trim() || undefined;
+
+    create.mutate(
+      updateType === "ProgressUpdate"
+        ? {
+            updateType,
+            projectStatus: status,
+            progressPercentage: progress,
+            achievement: text("achievement"),
+            nextStep: text("next"),
+            blocker: text("blocker"),
+            evidence,
+          }
+        : updateType === "Milestone"
+          ? { updateType, milestoneName: text("milestone"), milestoneDate: text("milestoneDate") }
+          : { updateType, metric: text("metric"), objectiveId },
+      { onSuccess: onClose },
+    );
   }
+
+  const noObjectives = updateType === "ValueMetric" && objectives.isSuccess && objectiveOptions.length === 0;
 
   return (
     <Modal
@@ -72,20 +106,27 @@ export function AddUpdateModal({ open, onClose, initiative, initiatives = [] }: 
           <Button variant="outline" radius="rounded-xl" onClick={onClose} className="h-[38px]">
             Cancel
           </Button>
-          <Button type="submit" form="add-update" size="wide" radius="rounded-xl" className="h-[38px]">
-            Publish Update
+          <Button
+            type="submit"
+            form="add-update"
+            size="wide"
+            radius="rounded-xl"
+            className="h-[38px]"
+            disabled={!current || create.isPending || noObjectives}
+          >
+            {create.isPending && <Spinner size={14} />}
+            {create.isPending ? "Publishing…" : "Publish Update"}
           </Button>
         </>
       }
     >
       <form id="add-update" onSubmit={submit} className="flex flex-col">
-        {!initiative && (
+        {!project && (
           <FieldGroup label="Project" labelId="au-project-label" gap="loose" className="pb-[30px]">
             <MenuSelect
-              name="initiative"
-              value={selectedSlug}
-              onChange={selectInitiative}
-              options={initiatives.map((i) => ({ value: i.slug, label: i.name }))}
+              value={selectedId}
+              onChange={selectProject}
+              options={projects.map((p) => ({ value: p.id, label: p.name }))}
               labelledBy="au-project-label"
               variant="field"
             />
@@ -108,10 +149,10 @@ export function AddUpdateModal({ open, onClose, initiative, initiatives = [] }: 
 
         <hr className="mt-5 mb-[19px] border-line" />
 
-        {updateType === "progress" && (
+        {updateType === "ProgressUpdate" && (
           <div className="flex flex-col gap-[30px]">
             <FieldGroup label="Project Status" labelId="au-status-label" gap="loose">
-              <MenuSelect name="status" value={status} onChange={setStatus} options={STATUS_OPTIONS} labelledBy="au-status-label" variant="field" />
+              <MenuSelect value={status} onChange={setStatus} options={STATUS_OPTIONS} labelledBy="au-status-label" variant="field" />
             </FieldGroup>
 
             <FieldGroup label="Overall Progress" htmlFor="au-progress" gap="loose">
@@ -129,7 +170,7 @@ export function AddUpdateModal({ open, onClose, initiative, initiatives = [] }: 
             </FieldGroup>
 
             <FieldGroup label="What are you working on next?" htmlFor="au-next">
-              <textarea id="au-next" name="next" placeholder="Next step" className={cn(fieldClass, "h-[72px] resize-none py-2")} />
+              <textarea id="au-next" name="next" required placeholder="Next step" className={cn(fieldClass, "h-[72px] resize-none py-2")} />
             </FieldGroup>
 
             <FieldGroup label="Are there any blockers?" htmlFor="au-blocker" optional>
@@ -137,12 +178,12 @@ export function AddUpdateModal({ open, onClose, initiative, initiatives = [] }: 
             </FieldGroup>
 
             <FieldGroup label="Attach Evidence" labelId="au-evidence-label" optional>
-              <EvidencePicker labelledBy="au-evidence-label" />
+              <EvidencePicker labelledBy="au-evidence-label" file={evidence} onChange={setEvidence} />
             </FieldGroup>
           </div>
         )}
 
-        {updateType === "milestone" && (
+        {updateType === "Milestone" && (
           <div className="flex flex-col gap-[30px]">
             <FieldGroup label="Add Milestone" htmlFor="au-milestone">
               <input id="au-milestone" name="milestone" required placeholder="Milestone Name" className={cn(fieldClass, "h-10")} />
@@ -153,23 +194,34 @@ export function AddUpdateModal({ open, onClose, initiative, initiatives = [] }: 
           </div>
         )}
 
-        {updateType === "value" && (
+        {updateType === "ValueMetric" && (
           <div className="flex flex-col gap-[30px]">
             <FieldGroup label="Metric" htmlFor="au-metric">
               <input id="au-metric" name="metric" required placeholder="e.g Active Users" className={cn(fieldClass, "h-10")} />
             </FieldGroup>
             <FieldGroup label="Linked Strategic Objective" labelId="au-objective-label" gap="loose">
-              <MenuSelect
-                name="objective"
-                value={objectiveId}
-                onChange={setObjectiveId}
-                options={objectiveOptions}
-                labelledBy="au-objective-label"
-                placement="top"
-                variant="field"
-              />
+              {noObjectives ? (
+                <p className="text-body text-muted">
+                  No strategic objectives yet. An admin can add them on the Value Realization page.
+                </p>
+              ) : (
+                <MenuSelect
+                  value={objectiveId}
+                  onChange={setObjectiveChoice}
+                  options={objectiveOptions}
+                  labelledBy="au-objective-label"
+                  placement="top"
+                  variant="field"
+                />
+              )}
             </FieldGroup>
           </div>
+        )}
+
+        {create.isError && (
+          <p role="alert" className="pt-5 text-body text-danger">
+            {errorMessage(create.error)}
+          </p>
         )}
       </form>
     </Modal>
@@ -300,15 +352,14 @@ function DateInput({ id, name }: { id: string; name: string }) {
   );
 }
 
-/** Dashed drop zone that opens the file picker. */
-function EvidencePicker({ labelledBy }: { labelledBy: string }) {
+/** Dashed drop zone that opens the file picker. The API takes one image (jpg, png or webp). */
+function EvidencePicker({ labelledBy, file, onChange }: { labelledBy: string; file?: File; onChange: (file?: File) => void }) {
   const id = useId();
-  const [files, setFiles] = useState<string[]>([]);
 
   return (
     <label
       htmlFor={id}
-      className="relative flex h-[46px] cursor-pointer items-center justify-center gap-2 rounded-xl text-body text-muted hover:text-brand"
+      className="relative flex h-[46px] cursor-pointer items-center justify-center gap-2 rounded-xl px-3 text-body text-muted hover:text-brand"
     >
       {/* SVG border: Figma's 2px dash / 1px gap can't be drawn with CSS `dashed`. */}
       <svg aria-hidden className="absolute inset-0 size-full overflow-visible">
@@ -321,15 +372,14 @@ function EvidencePicker({ labelledBy }: { labelledBy: string }) {
         />
       </svg>
       <MaskIcon src="/icons/paperclip.svg" size={16} />
-      {files.length ? `${files.length} file${files.length > 1 ? "s" : ""} attached` : "Attach evidence"}
+      <span className="truncate">{file ? file.name : "Attach evidence (image)"}</span>
       <input
         id={id}
         type="file"
-        name="evidence"
-        multiple
+        accept="image/jpeg,image/png,image/webp"
         aria-labelledby={labelledBy}
         className="sr-only"
-        onChange={(e) => setFiles(Array.from(e.target.files ?? [], (f) => f.name))}
+        onChange={(e) => onChange(e.target.files?.[0])}
       />
     </label>
   );

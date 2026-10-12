@@ -4,7 +4,8 @@ import { cn } from "@/lib/cn";
 /** Scroll wrapper + table. Place inside a Card. */
 export function Table({ className, ...props }: ComponentPropsWithoutRef<"table">) {
   return (
-    <div className="overflow-x-auto">
+    // `relative` keeps rows' stretched-link overlays inside the scroll area on narrow screens.
+    <div className="relative overflow-x-auto">
       <table className={cn("w-full border-collapse text-left", className)} {...props} />
     </div>
   );
@@ -29,5 +30,5 @@ export function Td({ className, ...props }: ComponentPropsWithoutRef<"td">) {
 
 /** Table row that highlights on hover. Pair with a stretched link in the first cell. */
 export function Tr({ className, ...props }: ComponentPropsWithoutRef<"tr">) {
-  return <tr className={cn("relative transition-colors last:[&>td]:border-b-0 hover:bg-page/50", className)} {...props} />;
+  return <tr className={cn("relative animate-fade-in transition-colors last:[&>td]:border-b-0 hover:bg-page/50", className)} {...props} />;
 }

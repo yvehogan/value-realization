@@ -11,7 +11,7 @@ type HeaderProps = {
 /** Page-level H1 + subtitle, with an optional right-aligned action. */
 export function PageHeader({ title, description, action, className }: HeaderProps) {
   return (
-    <div className={cn("flex items-end justify-between gap-4", className)}>
+    <div className={cn("flex flex-wrap items-end justify-between gap-4", className)}>
       <div>
         <h1 className="text-display font-black text-ink">{title}</h1>
         {description && <p className="pt-1 text-lead text-muted">{description}</p>}

@@ -4,21 +4,22 @@ import { Card } from "@/components/ui/card";
 import { StatusPill } from "@/components/ui/status-pill";
 import { TypeBadge } from "@/components/ui/type-badge";
 import { AddUpdateButton } from "@/components/modals/add-update-button";
-import { ownersOf } from "@/components/initiatives/initiative-table";
-import type { Initiative } from "@/lib/data";
+import { toProjectSummary } from "@/lib/api/adapters";
+import type { ProjectDetail } from "@/lib/api/types";
 
-export function InitiativeHeader({ initiative }: { initiative: Initiative }) {
+export function InitiativeHeader({ project }: { project: ProjectDetail }) {
+  const summary = toProjectSummary(project);
   return (
-    <Card className="flex flex-wrap items-start justify-between gap-6 rounded-card p-6">
+    <Card className="flex flex-col-reverse gap-5 rounded-card p-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6 sm:p-6">
       <div className="max-w-[672px] min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <TypeBadge type={initiative.type} />
-          <StatusPill status={initiative.status} size="md" />
+          <TypeBadge type={summary.type} />
+          <StatusPill status={summary.status} size="md" />
         </div>
-        <h1 className="pt-2 text-display font-black text-ink">{initiative.name}</h1>
-        {initiative.description && <p className="pt-2 text-lead text-muted">{initiative.description}</p>}
+        <h1 className="pt-2 text-display font-black text-ink">{summary.name}</h1>
+        {summary.description && <p className="pt-2 text-lead text-muted">{summary.description}</p>}
         <div className="flex flex-wrap items-center gap-2 pt-4">
-          {ownersOf(initiative).map((person) => (
+          {summary.owners.map((person) => (
             <Link
               key={person.id}
               href={`/team/${person.id}`}
@@ -28,14 +29,15 @@ export function InitiativeHeader({ initiative }: { initiative: Initiative }) {
               {person.name}
             </Link>
           ))}
-          <span className="pl-4 text-meta text-muted">Last updated {initiative.lastUpdated}</span>
+          <span className="pl-4 text-meta text-muted">Last updated {summary.lastUpdated}</span>
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-3">
-        <AddUpdateButton initiativeSlug={initiative.slug} />
-        <div className="text-center">
-          <p className="text-stat leading-10 font-black text-ink">{initiative.progress}%</p>
+      {/* Phones: progress left, button right, above the title. Wider: a column beside it. */}
+      <div className="flex flex-row-reverse items-center justify-between gap-3 sm:flex-col sm:items-center">
+        <AddUpdateButton project={summary} />
+        <div className="sm:text-center">
+          <p className="text-stat leading-10 font-black text-ink">{summary.progress}%</p>
           <p className="text-micro text-muted">Overall Progress</p>
         </div>
       </div>

@@ -1,12 +1,15 @@
+import { formatDate } from "@/lib/api/adapters";
+import type { ProjectUpdateFeedItem } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 
-export type UpdateKind = "achievement" | "next" | "blocker" | "metric";
+export type UpdateKind = "achievement" | "next" | "blocker" | "milestone" | "metric";
 
 const KIND_STYLES: Record<UpdateKind, { short: string; long: string; text: string; bg: string }> = {
   achievement: { short: "Achievement", long: "Achievement", text: "text-success", bg: "bg-success/10" },
   next: { short: "Next", long: "Next Step", text: "text-program", bg: "bg-program/10" },
   blocker: { short: "Blocker", long: "Blocker", text: "text-danger", bg: "bg-danger/10" },
-  metric: { short: "Metric", long: "Metric Update", text: "text-product", bg: "bg-product/10" },
+  milestone: { short: "Milestone", long: "Milestone", text: "text-venture", bg: "bg-venture/10" },
+  metric: { short: "Metric", long: "Value Metric", text: "text-product", bg: "bg-product/10" },
 };
 
 /** Coloured label chip for a line of an update. */
@@ -30,10 +33,23 @@ export function UpdateTag({ kind, children }: { kind: UpdateKind; children: stri
   );
 }
 
-export function updateLines(update: { achievement: string; next?: string; blocker?: string; metric?: string }) {
-  const lines: { kind: UpdateKind; text: string }[] = [{ kind: "achievement", text: update.achievement }];
-  if (update.next) lines.push({ kind: "next", text: update.next });
+type UpdateFields = Pick<
+  ProjectUpdateFeedItem,
+  "achievement" | "nextStep" | "blocker" | "milestoneName" | "milestoneDate" | "metric" | "objectiveName"
+>;
+
+/** The labelled lines an update shows, in display order. */
+export function updateLines(update: UpdateFields) {
+  const lines: { kind: UpdateKind; text: string }[] = [];
+  if (update.achievement) lines.push({ kind: "achievement", text: update.achievement });
+  if (update.nextStep) lines.push({ kind: "next", text: update.nextStep });
   if (update.blocker) lines.push({ kind: "blocker", text: update.blocker });
-  if (update.metric) lines.push({ kind: "metric", text: update.metric });
+  if (update.milestoneName) {
+    const date = update.milestoneDate ? ` · ${formatDate(update.milestoneDate)}` : "";
+    lines.push({ kind: "milestone", text: update.milestoneName + date });
+  }
+  if (update.metric) {
+    lines.push({ kind: "metric", text: update.objectiveName ? `${update.metric} → ${update.objectiveName}` : update.metric });
+  }
   return lines;
 }

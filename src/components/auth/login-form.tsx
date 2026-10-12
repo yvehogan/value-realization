@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { login, type LoginState } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { MaskIcon } from "@/components/ui/icon";
+import { Spinner } from "@/components/ui/loader";
 
 const fieldClass =
   "h-10 w-full rounded-xl border border-line bg-surface px-3 text-body text-ink outline-none placeholder:text-ink/30 focus:border-brand aria-invalid:border-danger";
@@ -11,6 +12,7 @@ const fieldClass =
 export function LoginForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(login, undefined);
   const invalid = !!state?.error;
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <form action={action} noValidate>
@@ -38,17 +40,28 @@ export function LoginForm({ next }: { next?: string }) {
         <label htmlFor="password" className="text-body font-bold text-ink">
           Password
         </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          aria-invalid={invalid || undefined}
-          aria-describedby={invalid ? "login-error" : undefined}
-          placeholder="***"
-          className={fieldClass}
-        />
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
+            required
+            aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? "login-error" : undefined}
+            placeholder="***"
+            className={`${fieldClass} pr-11`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((s) => !s)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-xl text-muted hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+          >
+            <MaskIcon src={showPassword ? "/icons/eye-off.svg" : "/icons/eye.svg"} size={20} />
+          </button>
+        </div>
       </div>
 
       {invalid && (
@@ -65,7 +78,7 @@ export function LoginForm({ next }: { next?: string }) {
         className="mt-10 h-10 w-full justify-center gap-3"
       >
         {pending ? "Signing in…" : "Sign in"}
-        <MaskIcon src="/icons/arrow-right.svg" size={16} />
+        {pending ? <Spinner size={16} /> : <MaskIcon src="/icons/arrow-right.svg" size={16} />}
       </Button>
     </form>
   );

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
+import { AddMemberButton } from "@/components/team/add-member-button";
 import { TeamView } from "@/components/team/team-view";
-import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/headers";
-import { Icon } from "@/components/ui/icon";
 import { requireViewer } from "@/lib/auth";
 import { isAdmin } from "@/lib/viewer";
 
@@ -16,14 +15,7 @@ export default async function TeamPage() {
       <PageHeader
         title="Team"
         description="The Innovation team and what everyone is working on."
-        action={
-          isAdmin(viewer) && (
-            <Button>
-              <Icon src="/icons/plus.svg" size={15} />
-              Add Member
-            </Button>
-          )
-        }
+        action={isAdmin(viewer) && <AddMemberButton />}
       />
       <TeamView />
     </>

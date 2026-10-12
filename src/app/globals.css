@@ -87,6 +87,36 @@
   --shadow-card:
     0 1px 1px rgb(24 10 31 / 0.04), 0 8px 12px rgb(24 10 31 / 0.12);
 
+  /* Motion: one easing curve and a few short entrances, used across the app */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-up: fade-up 380ms var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 220ms ease-out both;
+  --animate-pop-in: pop-in 200ms var(--ease-out-soft) both;
+  --animate-grow-x: grow-x 800ms var(--ease-out-soft) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.97);
+    }
+  }
+  @keyframes grow-x {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
   /* Layout */
   --spacing-sidebar: 16.25rem; /* 260 */
   --spacing-sidebar-collapsed: 4.75rem; /* 76 */
@@ -109,5 +139,22 @@ body {
   &::-webkit-scrollbar-thumb {
     background: var(--color-scrollbar);
     border-radius: 42px;
+  }
+}
+
+/* Staggered entrances: set `--i` (0, 1, 2…) inline on each item. */
+@utility stagger {
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* Respect the OS "reduce motion" setting everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after,
+  ::backdrop {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
